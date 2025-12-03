@@ -32,6 +32,15 @@ router.post("/monetag/postback", async (req: Request, res: Response) => {
 
     console.log("[Postback] Received:", req.query);
 
+    // 🚫 IGNORAR postbacks do Monetag S2S com macros literais
+    if (sub_id === '{sub_id}' || sub_id === '{sub_id2}') {
+      console.log('[Postback] ❌ IGNORADO - Postback do Monetag S2S com macros literais');
+      return res.status(200).json({
+        success: true,
+        message: 'Ignored - literal macros',
+      });
+    }
+
     // Validate required fields
     if (!event_type || !zone_id) {
       return res.status(400).json({
@@ -101,6 +110,15 @@ router.get("/monetag/postback", async (req: Request, res: Response) => {
     } = req.query;
 
     console.log("[Postback GET] Received:", req.query);
+
+    // 🚫 IGNORAR postbacks do Monetag S2S com macros literais
+    if (sub_id === '{sub_id}' || sub_id === '{sub_id2}') {
+      console.log('[Postback GET] ❌ IGNORADO - Postback do Monetag S2S com macros literais');
+      return res.status(200).json({
+        success: true,
+        message: 'Ignored - literal macros',
+      });
+    }
 
     // Validate required fields
     if (!event_type || !zone_id) {
