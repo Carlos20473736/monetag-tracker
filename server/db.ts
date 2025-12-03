@@ -183,6 +183,16 @@ export async function getAdEventsByDateRange(startDate: Date, endDate: Date) {
     .orderBy(desc(adEvents.createdAt));
 }
 
+export async function deleteAllAdEvents() {
+  const db = await getDb();
+  if (!db) {
+    throw new Error("Database not available");
+  }
+
+  const result = await db.delete(adEvents);
+  return result;
+}
+
 // Ad Zones functions
 export async function createAdZone(zone: InsertAdZone) {
   const db = await getDb();

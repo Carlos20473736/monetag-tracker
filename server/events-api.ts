@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { getAllAdEvents, getAdEventsByTelegramId, getAdEventStats } from './db';
+import { getAllAdEvents, getAdEventsByTelegramId, getAdEventStats, deleteAllAdEvents } from './db';
 
 const router = Router();
 
@@ -61,6 +61,28 @@ router.get('/events/user/:telegramId', async (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       message: 'Failed to fetch user events',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+});
+
+/**
+ * DELETE /api/events
+ * Limpa todo o histórico de eventos
+ */
+router.delete('/events', async (req: Request, res: Response) => {
+  try {
+    await deleteAllAdEvents();
+    
+    res.json({
+      success: true,
+      message: 'All events deleted successfully',
+    });
+  } catch (error) {
+    console.error('Error deleting events:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete events',
       error: error instanceof Error ? error.message : 'Unknown error',
     });
   }
