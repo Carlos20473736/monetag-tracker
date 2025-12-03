@@ -33,7 +33,7 @@ router.post("/monetag/postback", async (req: Request, res: Response) => {
     console.log("[Postback] Received:", req.query);
 
     // 🚫 IGNORAR postbacks do Monetag S2S com macros literais
-    if (sub_id === '{sub_id}' || sub_id === '{sub_id2}') {
+    if (sub_id === '{sub_id}' && sub_id2 === '{sub_id2}') {
       console.log('[Postback] ❌ IGNORADO - Postback do Monetag S2S com macros literais');
       return res.status(200).json({
         success: true,
@@ -112,8 +112,9 @@ router.get("/monetag/postback", async (req: Request, res: Response) => {
     console.log("[Postback GET] Received:", req.query);
 
     // 🚫 IGNORAR postbacks do Monetag S2S com macros literais
-    if (sub_id === '{sub_id}' || sub_id === '{sub_id2}') {
+    if (sub_id === '{sub_id}' && sub_id2 === '{sub_id2}') {
       console.log('[Postback GET] ❌ IGNORADO - Postback do Monetag S2S com macros literais');
+      console.log('[Postback GET] sub_id:', sub_id, '| sub_id2:', sub_id2);
       return res.status(200).json({
         success: true,
         message: 'Ignored - literal macros',
