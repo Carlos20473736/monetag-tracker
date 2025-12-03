@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { getEvents, getEventsByUser, getEventStats } from './db';
+import { getAllAdEvents, getAdEventsByTelegramId, getAdEventStats } from './db';
 
 const router = Router();
 
@@ -9,8 +9,15 @@ const router = Router();
  */
 router.get('/events', async (req: Request, res: Response) => {
   try {
-    const events = await getEvents();
-    const stats = await getEventStats();
+    const events = await getAllAdEvents();
+    const dbStats = await getAdEventStats();
+    
+    // Format stats to match dashboard expectations
+    const stats = {
+      impressions: Number(dbStats.totalImpressions) || 0,
+      clicks: Number(dbStats.totalClicks) || 0,
+      uniqueUsers: Number(dbStats.uniqueUsers) || 0,
+    };
     
     res.json({
       success: true,
@@ -42,7 +49,7 @@ router.get('/events/user/:telegramId', async (req: Request, res: Response) => {
       });
     }
     
-    const events = await getEventsByUser(telegramId);
+    const events = await getAdEventsByTelegramId(telegramId);
     
     res.json({
       success: true,
