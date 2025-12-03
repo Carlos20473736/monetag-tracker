@@ -8,6 +8,7 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import postbackRouter from "../postback";
+import eventsRouter from "../events-api";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -53,6 +54,8 @@ async function startServer() {
   registerOAuthRoutes(app);
   // Monetag postback routes
   app.use("/api", postbackRouter);
+  // Events API routes
+  app.use("/api", eventsRouter);
   // tRPC API
   app.use(
     "/api/trpc",
