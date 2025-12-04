@@ -25,6 +25,27 @@ export const users = mysqlTable("users", {
  * Monetag ad zones configuration
  * Stores zone IDs and their settings
  */
+/**
+ * Active ad sessions table
+ * Tracks which user is currently watching an ad
+ */
+export const adSessions = mysqlTable("ad_sessions", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: varchar("userId", { length: 255 }).notNull(),
+  userEmail: varchar("userEmail", { length: 255 }).notNull(),
+  zoneId: varchar("zoneId", { length: 255 }).notNull(),
+  sessionToken: varchar("sessionToken", { length: 255 }).notNull().unique(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  expiresAt: timestamp("expiresAt").notNull(),
+});
+
+export type AdSession = typeof adSessions.$inferSelect;
+export type InsertAdSession = typeof adSessions.$inferInsert;
+
+/**
+ * Monetag ad zones configuration
+ * Stores zone IDs and their settings
+ */
 export const adZones = mysqlTable("ad_zones", {
   id: int("id").autoincrement().primaryKey(),
   zoneId: varchar("zoneId", { length: 64 }).notNull().unique(),

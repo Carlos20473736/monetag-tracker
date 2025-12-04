@@ -10,6 +10,7 @@ import { serveStatic, setupVite } from "./vite";
 import postbackRouter from "../postback";
 import eventsRouter from "../events-api";
 import statsRouter from "../stats";
+import sessionsRouter from "../sessions";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -59,6 +60,8 @@ async function startServer() {
   app.use("/api", eventsRouter);
   // Stats API routes
   app.use("/api", statsRouter);
+  // Sessions API routes
+  app.use("/api", sessionsRouter);
   // tRPC API
   app.use(
     "/api/trpc",

@@ -122,14 +122,57 @@ router.get("/monetag/postback", async (req: Request, res: Response) => {
 
     console.log("[Postback GET] Received:", req.query);
 
-    // 🚫 IGNORAR postbacks do Monetag S2S com macros literais
-    if (sub_id === '{sub_id}' && sub_id2 === '{sub_id2}') {
-      console.log('[Postback GET] ❌ IGNORADO - Postback do Monetag S2S com macros literais');
-      console.log('[Postback GET] sub_id:', sub_id, '| sub_id2:', sub_id2);
-      return res.status(200).json({
-        success: true,
-        message: 'Ignored - literal macros',
-      });
+    // 🔄 SUBSTITUIR macros literais por dados da sessão ativa
+    let finalSubId = sub_id;
+    let finalSubId2 = sub_id2;
+    
+    if (sub_id === '{sub_id}' || sub_id2 === '{sub_id2}') {
+      console.log('[Postback GET] 🔍 Postback com macros literais detectado, buscando sessão ativa...');
+      
+      try {
+        // Importar função para buscar sessão
+        const { default: sessionsRouter } = await import('./sessions');
+        
+        // Buscar sessão ativa para esta zona
+        const db = await (await import('./db')).getDb();
+        if (db) {
+          const { adSessions } = await import('../drizzle/schema');
+          const { eq } = await import('drizzle-orm');
+          
+          const sessions = await db
+            .select()
+            .from(adSessions)
+            .where(eq(adSessions.zoneId, String(zone_id)))
+            .orderBy(adSessions.createdAt)
+            .limit(10);
+          
+          // Filtrar sessões não expiradas
+          const now = new Date();
+          const activeSessions = sessions.filter(s => new Date(s.expiresAt) > now);
+          
+          if (activeSessions.length > 0) {
+            // Usar a sessão mais recente
+            const session = activeSessions[activeSessions.length - 1];
+            finalSubId = session.userId;
+            finalSubId2 = session.userEmail;
+            
+            console.log('[Postback GET] ✅ Sessão ativa encontrada!');
+            console.log('[Postback GET] userId:', finalSubId, '| userEmail:', finalSubId2);
+          } else {
+            console.log('[Postback GET] ⚠️ Nenhuma sessão ativa encontrada, ignorando postback');
+            return res.status(200).json({
+              success: true,
+              message: 'Ignored - no active session',
+            });
+          }
+        }
+      } catch (error) {
+        console.error('[Postback GET] Erro ao buscar sessão:', error);
+        return res.status(200).json({
+          success: true,
+          message: 'Ignored - session lookup failed',
+        });
+      }
     }
 
     // Validate required fields
@@ -148,9 +191,9 @@ router.get("/monetag/postback", async (req: Request, res: Response) => {
       });
     }
 
-    // Usar ymid (novo) ou sub_id (antigo) para telegram_id
-    const telegramId = ymid ? String(ymid) : (sub_id ? String(sub_id) : null);
-    const userEmail = request_var ? String(request_var) : (sub_id2 ? String(sub_id2) : null);
+    // Usar ymid (novo) ou finalSubId (com dados da sessão) para telegram_id
+    const telegramId = ymid ? String(ymid) : (finalSubId ? String(finalSubId) : null);
+    const userEmail = request_var ? String(request_var) : (finalSubId2 ? String(finalSubId2) : null);
     const userAgent = req.headers["user-agent"] || null;
 
     await db.createAdEvent({
@@ -158,7 +201,7 @@ router.get("/monetag/postback", async (req: Request, res: Response) => {
       telegramId,
       zoneId: String(zone_id),
       clickId: click_id ? String(click_id) : null,
-      subId: ymid ? String(ymid) : (sub_id ? String(sub_id) : null),
+      subId: ymid ? String(ymid) : (finalSubId ? String(finalSubId) : null),
       subId2: userEmail,
       revenue: revenue ? String(revenue) : null,
       currency: currency ? String(currency) : null,
