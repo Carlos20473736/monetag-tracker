@@ -24,6 +24,7 @@ router.post("/monetag/postback", async (req: Request, res: Response) => {
       zone_id,
       click_id,
       sub_id,
+      sub_id2,
       revenue,
       currency,
       country,
@@ -103,6 +104,7 @@ router.get("/monetag/postback", async (req: Request, res: Response) => {
       zone_id,
       click_id,
       sub_id,
+      sub_id2,
       revenue,
       currency,
       country,
@@ -156,35 +158,11 @@ router.get("/monetag/postback", async (req: Request, res: Response) => {
 
     console.log("[Postback GET] Event recorded successfully");
 
-    // Buscar estatísticas do usuário
-    let stats = null;
-    if (telegramId) {
-      try {
-        const userEvents = await db.getEventsByTelegramId(telegramId);
-        const impressions = userEvents.filter(e => e.eventType === 'impression').length;
-        const clicks = userEvents.filter(e => e.eventType === 'click').length;
-        const totalRevenue = userEvents.reduce((sum, e) => {
-          const rev = parseFloat(e.revenue || '0');
-          return sum + (isNaN(rev) ? 0 : rev);
-        }, 0);
-
-        stats = {
-          impressions,
-          clicks,
-          totalRevenue: totalRevenue.toFixed(4),
-          lastEvent: event_type,
-        };
-
-        console.log('[Postback GET] Stats:', stats);
-      } catch (err) {
-        console.error('[Postback GET] Error fetching stats:', err);
-      }
-    }
-
     return res.status(200).json({
       success: true,
       message: "Event recorded",
-      stats,
+      event_type,
+      sub_id: telegramId,
     });
   } catch (error) {
     console.error("[Postback GET] Error:", error);
