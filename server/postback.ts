@@ -23,19 +23,23 @@ router.post("/monetag/postback", async (req: Request, res: Response) => {
       event_type,
       zone_id,
       click_id,
-      sub_id,
-      sub_id2,
+      ymid,
+      request_var,
       revenue,
       currency,
       country,
       ip,
+      // Manter compatibilidade com versões antigas
+      sub_id,
+      sub_id2,
     } = req.query;
 
     console.log("[Postback] Received:", req.query);
 
     // 🚫 IGNORAR postbacks do Monetag S2S com macros literais
-    if (sub_id === '{sub_id}' && sub_id2 === '{sub_id2}') {
+    if (ymid === '{ymid}' || request_var === '{request_var}' || sub_id === '{sub_id}' || sub_id2 === '{sub_id2}') {
       console.log('[Postback] ❌ IGNORADO - Postback do Monetag S2S com macros literais');
+      console.log('[Postback] ymid:', ymid, '| request_var:', request_var);
       return res.status(200).json({
         success: true,
         message: 'Ignored - literal macros',
@@ -58,8 +62,9 @@ router.post("/monetag/postback", async (req: Request, res: Response) => {
       });
     }
 
-    // Extract telegram_id from sub_id if available
-    const telegramId = sub_id ? String(sub_id) : null;
+    // Usar ymid (novo) ou sub_id (antigo) para telegram_id
+    const telegramId = ymid ? String(ymid) : (sub_id ? String(sub_id) : null);
+    const userEmail = request_var ? String(request_var) : (sub_id2 ? String(sub_id2) : null);
 
     // Get user agent from headers
     const userAgent = req.headers["user-agent"] || null;
@@ -70,8 +75,8 @@ router.post("/monetag/postback", async (req: Request, res: Response) => {
       telegramId,
       zoneId: String(zone_id),
       clickId: click_id ? String(click_id) : null,
-      subId: sub_id ? String(sub_id) : null,
-      subId2: sub_id2 ? String(sub_id2) : null,
+      subId: ymid ? String(ymid) : (sub_id ? String(sub_id) : null),
+      subId2: userEmail,
       revenue: revenue ? String(revenue) : null,
       currency: currency ? String(currency) : null,
       userAgent: userAgent ? String(userAgent) : null,
@@ -104,12 +109,15 @@ router.get("/monetag/postback", async (req: Request, res: Response) => {
       event_type,
       zone_id,
       click_id,
-      sub_id,
-      sub_id2,
+      ymid,
+      request_var,
       revenue,
       currency,
       country,
       ip,
+      // Manter compatibilidade com versões antigas
+      sub_id,
+      sub_id2,
     } = req.query;
 
     console.log("[Postback GET] Received:", req.query);
@@ -148,8 +156,8 @@ router.get("/monetag/postback", async (req: Request, res: Response) => {
       telegramId,
       zoneId: String(zone_id),
       clickId: click_id ? String(click_id) : null,
-      subId: sub_id ? String(sub_id) : null,
-      subId2: sub_id2 ? String(sub_id2) : null,
+      subId: ymid ? String(ymid) : (sub_id ? String(sub_id) : null),
+      subId2: userEmail,
       revenue: revenue ? String(revenue) : null,
       currency: currency ? String(currency) : null,
       userAgent: userAgent ? String(userAgent) : null,
