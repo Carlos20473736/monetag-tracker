@@ -56,6 +56,7 @@ export const adEvents = mysqlTable("ad_events", {
   // Monetag postback data
   clickId: varchar("clickId", { length: 255 }),
   subId: varchar("subId", { length: 255 }),
+  subId2: varchar("subId2", { length: 255 }),
   revenue: varchar("revenue", { length: 64 }),
   currency: varchar("currency", { length: 10 }),
   

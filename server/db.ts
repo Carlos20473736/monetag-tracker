@@ -113,6 +113,20 @@ export async function getAdEventsByTelegramId(telegramId: string, limit = 100) {
     .limit(limit);
 }
 
+export async function getAdEventsByEmail(email: string, limit = 1000) {
+  const db = await getDb();
+  if (!db) {
+    return [];
+  }
+
+  return await db
+    .select()
+    .from(adEvents)
+    .where(eq(adEvents.subId2, email))
+    .orderBy(desc(adEvents.createdAt))
+    .limit(limit);
+}
+
 export async function getAdEventsByZone(zoneId: string, limit = 100) {
   const db = await getDb();
   if (!db) {

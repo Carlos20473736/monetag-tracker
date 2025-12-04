@@ -9,6 +9,7 @@ import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import postbackRouter from "../postback";
 import eventsRouter from "../events-api";
+import statsRouter from "../stats";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -56,6 +57,8 @@ async function startServer() {
   app.use("/api", postbackRouter);
   // Events API routes
   app.use("/api", eventsRouter);
+  // Stats API routes
+  app.use("/api", statsRouter);
   // tRPC API
   app.use(
     "/api/trpc",
