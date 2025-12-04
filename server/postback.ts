@@ -148,7 +148,9 @@ router.get("/monetag/postback", async (req: Request, res: Response) => {
       });
     }
 
-    const telegramId = sub_id ? String(sub_id) : null;
+    // Usar ymid (novo) ou sub_id (antigo) para telegram_id
+    const telegramId = ymid ? String(ymid) : (sub_id ? String(sub_id) : null);
+    const userEmail = request_var ? String(request_var) : (sub_id2 ? String(sub_id2) : null);
     const userAgent = req.headers["user-agent"] || null;
 
     await db.createAdEvent({
